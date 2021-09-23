@@ -33,6 +33,10 @@ namespace Linearstar.Windows.RawInput
         public int? Height { get; }
         public int? Identifier { get; }
 
+        public bool IsTipDown { get; set; }
+
+        public bool IsEraser { get; set; }
+
         public RawInputDigitizerContact(IEnumerable<HidButtonState> buttonStates, IEnumerable<HidValueState> valueStates)
         {
             var buttons = buttonStates.ToDictionary(x => x.Button.UsageAndPage, x => x.IsActive);
@@ -53,10 +57,12 @@ namespace Linearstar.Windows.RawInput
 
             IsInverted = buttons.TryGetValue(UsageInvert, out var invert) ? invert : (bool?)null;
             IsButtonDown = buttons.TryGetValue(UsageBarrel, out var barrel) ? barrel : (bool?)null;
+            IsEraser = buttons.TryGetValue(UsageEraser, out var eraser) && eraser;
 
-            var isTipDown = buttons[UsageTipSwitch];
+             var isTipDown = buttons[UsageTipSwitch];
+            IsTipDown = isTipDown;
 
-            if (buttons.TryGetValue(UsageEraser, out var eraser) && eraser)
+            if (IsEraser)
                 Kind = RawInputDigitizerContactKind.Eraser;
             else
                 Kind = isTipDown

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Linq;
 using System.Windows.Forms;
 using Linearstar.Windows.RawInput;
 
@@ -20,6 +21,17 @@ namespace RawInput.Sharp.SimpleExample
                 Style = 0x800000,
             });
         }
+
+
+        // 按钮是否按下
+        private bool _isBarrelButtonDown = false;
+        private bool _isEraserButtonDown = false;
+        
+        private DateTime? _BarrelButtnonDownTime;
+        private DateTime?_EraserButtonDownTime;
+
+        // 按键过程中是否绘制了
+        private bool _hasTipDown = false;
 
         protected override void WndProc(ref Message m)
         {
@@ -60,19 +72,93 @@ namespace RawInput.Sharp.SimpleExample
 
         private void OutputInfo(RawInputDigitizerData pen)
         {
-            Debug.WriteLine($"Pen= {pen} ======================");
-
-            Debug.WriteLine($"ButtonSetStates:");
-            foreach(var item in pen.ButtonSetStates)
+            if (pen.Contacts.Length > 0)
             {
-                Debug.WriteLine($"\t{item}");
+                var contract = pen.Contacts.First();
+
+               
+
+                Debug.WriteLine($"Pen= TipDown:{contract.IsTipDown} IsButtonDown:{contract.IsButtonDown} Earser:{contract.IsEraser} Kind:{contract.Kind}  ======================");
+
+                if (_isBarrelButtonDown == false)
+                {
+                    if (contract.IsTipDown == false
+                        && contract.IsButtonDown == true)
+                    {
+                        _isBarrelButtonDown = true;
+                        _BarrelButtnonDownTime = DateTime.Now;
+                        _hasTipDown = false;
+
+                        Debug.WriteLine("按下了右键按钮");
+                    }
+                }
+                else
+                {
+                    if (contract.IsButtonDown == false)
+                    {
+                        // 抬起了
+                        _isBarrelButtonDown = false;
+
+                        if (!_hasTipDown)
+                        {
+                            var ms = (DateTime.Now - _BarrelButtnonDownTime.Value).TotalMilliseconds;
+                            Debug.WriteLine($"抬起了右键按钮。按下时长：{ms}");
+                        }
+                        
+
+                    }
+                }
+
+                if (_isEraserButtonDown == false)
+                {
+                    if (contract.IsTipDown == false
+                        && contract.IsEraser == true)
+                    {
+                        _isEraserButtonDown = true;
+                        _EraserButtonDownTime = DateTime.Now;
+                        _hasTipDown = false;
+
+                        Debug.WriteLine("按下了橡皮擦按钮");
+                    }
+                }
+                else
+                {
+                    if (contract.IsEraser == false)
+                    {
+                        // 抬起了
+                        _isEraserButtonDown = false;
+
+                        if (!_hasTipDown)
+                        {
+                            var ms = (DateTime.Now - _EraserButtonDownTime.Value).TotalMilliseconds;
+                            Debug.WriteLine($"抬起了橡皮擦按钮。按下时长：{ms}");
+                        }
+                    }
+                }
+
+                if (contract.IsTipDown && !_hasTipDown)
+                {
+                    _hasTipDown = true;
+                }
+
+
+
+                //if (_isBarrelButtonDown == false && contract.Kind == RawInputDigitizerContactKind.Hover)
             }
 
-            Debug.WriteLine("Contract:");
-            foreach(var item in pen.Contacts)
-            {
-                Debug.WriteLine(item);
-            }
+            
+
+            //Debug.WriteLine($"ButtonSetStates:");
+            //foreach(var item in pen.ButtonSetStates)
+            //{
+            //    Debug.WriteLine($"\t{item}");
+            //}
+
+            //Debug.WriteLine("Contract:");
+            //foreach(var item in pen.Contacts)
+            //{
+            //    Debug.WriteLine(item);
+            //}
 
             //Debug.WriteLine($"DataSetStates：");
 
