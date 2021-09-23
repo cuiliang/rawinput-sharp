@@ -13,11 +13,19 @@ namespace RawInput.Sharp.SimpleExample
             var devices = RawInputDevice.GetDevices();
 
             // Keyboards will be returned as a RawInputKeyboard.
-            var keyboards = devices.OfType<RawInputKeyboard>();
+            //var keyboards = devices.OfType<RawInputKeyboard>();
 
             // List them up.
-            foreach (var device in keyboards)
-                Console.WriteLine($"{device.DeviceType} {device.VendorId:X4}:{device.ProductId:X4} {device.ProductName}, {device.ManufacturerName}");
+            foreach (var device in devices)
+            {
+                try
+                {
+                    Console.WriteLine($"{device.DeviceType} {device.VendorId:X4}:{device.ProductId:X4} {device.ProductName}, {device.ManufacturerName} (0x{device.UsageAndPage.UsagePage:X2}:0x{device.UsageAndPage.Usage:X2})");
+
+                }
+                catch { }
+            }
+                
 
             // To begin catching inputs, first make a window that listens WM_INPUT.
             var window = new RawInputReceiverWindow();
@@ -33,13 +41,15 @@ namespace RawInput.Sharp.SimpleExample
             try
             {
                 // Register the HidUsageAndPage to watch any device.
-                RawInputDevice.RegisterDevice(HidUsageAndPage.Keyboard, RawInputDeviceFlags.ExInputSink | RawInputDeviceFlags.NoLegacy, window.Handle);
+                //RawInputDevice.RegisterDevice(HidUsageAndPage.Keyboard, RawInputDeviceFlags.ExInputSink | RawInputDeviceFlags.NoLegacy, window.Handle);
+
+                RawInputDevice.RegisterDevice(HidUsageAndPage.Pen, RawInputDeviceFlags.InputSink, window.Handle);
 
                 Application.Run();
             }
             finally
             {
-                RawInputDevice.UnregisterDevice(HidUsageAndPage.Keyboard);
+                RawInputDevice.UnregisterDevice(HidUsageAndPage.Pen);
             }
         }
     }

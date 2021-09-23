@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 
 namespace Linearstar.Windows.RawInput
 {
@@ -42,10 +43,18 @@ namespace Linearstar.Windows.RawInput
         public override bool Equals(object obj) =>
             obj is HidUsageAndPage huap ? Equals(huap) : base.Equals(obj);
 
-        public override int GetHashCode() =>
-            typeof(HidUsageAndPage).GetHashCode() ^
-            UsagePage.GetHashCode() ^
-            Usage.GetHashCode();
+        public override int GetHashCode()
+        {
+            return UsagePage << 16 + Usage;
+
+//            var hashcode = typeof(HidUsageAndPage).GetHashCode() ^
+//UsagePage.GetHashCode() ^
+//Usage.GetHashCode();
+
+//            Debug.WriteLine($"UsagePage:{UsagePage}, Usage:{Usage}, HashCode:{hashcode}");
+
+           // return hashcode;
+        }
 
         public override string ToString() =>
             $"{UsagePage:X2}:{Usage:X2}";
